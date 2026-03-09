@@ -333,7 +333,7 @@ function renderHtml(initData) {
     <link rel="alternate icon" href="/favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" />
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -360,7 +360,8 @@ function renderHtml(initData) {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Outfit', '"Noto Sans SC"', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', 'sans-serif'],
+              sans: ['Inter', '"Noto Sans SC"', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', 'sans-serif'],
+              serif: ['Inter', '"Noto Sans SC"', 'sans-serif'],
               mono: ['"JetBrains Mono"', '"SF Mono"', 'Consolas', 'monospace'],
             },
             animation: {
@@ -387,69 +388,151 @@ function renderHtml(initData) {
       }
     </script>
     <script>
-      // 主题初始化：在页面渲染前应用主题，防止闪烁
+      // 主题与风格初始化：在页面渲染前应用，防止闪烁
       (function() {
+        var root = document.documentElement;
         var theme = localStorage.getItem('theme');
+        var stylePreset = localStorage.getItem('style-preset');
+        if (!['linear', 'original', 'apple'].includes(stylePreset)) {
+          stylePreset = 'apple';
+        }
+        root.dataset.style = stylePreset;
         if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark');
+          root.classList.add('dark');
         }
       })();
     </script>
     <style>
       :root {
-        --bg: #f4f8ff;
-        --bg-2: #f8f7ff;
-        --surface: rgba(255, 255, 255, 0.82);
-        --surface-strong: rgba(255, 255, 255, 0.96);
-        --line: rgba(14, 116, 144, 0.14);
-        --text-soft: #4b5563;
-        --brand: #0e7490;
-        --brand-2: #0284c7;
+        --bg: #f6f8fb;
+        --bg-2: #eef3f9;
+        --surface: rgba(255, 255, 255, 0.76);
+        --surface-strong: rgba(255, 255, 255, 0.88);
+        --surface-tint: rgba(245, 247, 250, 0.82);
+        --line: rgba(15, 23, 42, 0.08);
+        --line-strong: rgba(99, 102, 241, 0.18);
+        --text-soft: #5f6b7a;
+        --brand: #0f172a;
+        --brand-2: #2563eb;
+        --brand-3: #4f46e5;
+        --lux: #6b7cff;
+        --lux-soft: rgba(107, 124, 255, 0.14);
+        --shadow-soft: 0 18px 48px rgba(15, 23, 42, 0.08);
+        --shadow-strong: 0 26px 70px rgba(15, 23, 42, 0.12);
       }
       html.dark {
-        --bg: #07121d;
-        --bg-2: #101a2d;
-        --surface: rgba(14, 25, 41, 0.74);
-        --surface-strong: rgba(11, 22, 37, 0.94);
-        --line: rgba(56, 189, 248, 0.22);
-        --text-soft: #94a3b8;
-        --brand: #38bdf8;
-        --brand-2: #22d3ee;
+        --bg: #070b13;
+        --bg-2: #0b1120;
+        --surface: rgba(11, 17, 28, 0.78);
+        --surface-strong: rgba(9, 13, 22, 0.9);
+        --surface-tint: rgba(10, 16, 28, 0.86);
+        --line: rgba(148, 163, 184, 0.12);
+        --line-strong: rgba(129, 140, 248, 0.22);
+        --text-soft: #93a1b5;
+        --brand: #f8fafc;
+        --brand-2: #93c5fd;
+        --brand-3: #818cf8;
+        --lux: #8ea0ff;
+        --lux-soft: rgba(142, 160, 255, 0.14);
+        --shadow-soft: 0 22px 58px rgba(2, 8, 23, 0.42);
+        --shadow-strong: 0 30px 78px rgba(2, 8, 23, 0.34);
+      }
+      html.dark body {
+        color-scheme: dark;
       }
       body {
+        min-height: 100vh;
         background:
-          radial-gradient(60rem 60rem at -15% -20%, rgba(34, 211, 238, 0.2), transparent 52%),
-          radial-gradient(52rem 52rem at 120% -10%, rgba(59, 130, 246, 0.18), transparent 46%),
+          radial-gradient(56rem 56rem at -12% -18%, rgba(96, 165, 250, 0.14), transparent 52%),
+          radial-gradient(46rem 46rem at 118% -6%, rgba(129, 140, 248, 0.11), transparent 44%),
+          radial-gradient(36rem 36rem at 50% 110%, rgba(255, 255, 255, 0.32), transparent 56%),
           linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);
+        background-attachment: fixed;
+      }
+      body:before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.5), transparent 18%),
+          radial-gradient(circle at 80% 8%, rgba(255, 255, 255, 0.24), transparent 14%);
+        opacity: 0.28;
       }
       .app-shell {
         position: relative;
+        isolation: isolate;
       }
       .app-shell:before {
         content: '';
         position: fixed;
         inset: 0;
         pointer-events: none;
-        opacity: 0.3;
+        opacity: 0.36;
         background-image: linear-gradient(rgba(14, 116, 144, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 116, 144, 0.05) 1px, transparent 1px);
         background-size: 30px 30px;
         mask-image: radial-gradient(circle at 40% 20%, black 20%, transparent 80%);
       }
       .surface-card {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        box-shadow: 0 10px 30px rgba(14, 116, 144, 0.08);
-        backdrop-filter: blur(9px);
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), var(--surface));
+        border: 1px solid rgba(255, 255, 255, 0.56);
+        box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(24px) saturate(160%);
       }
       .surface-strong {
-        background: var(--surface-strong);
-        border: 1px solid var(--line);
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), var(--surface-tint));
+        border: 1px solid rgba(255, 255, 255, 0.58);
+        box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.44);
+      }
+      html.dark .surface-card,
+      html.dark .surface-strong {
+        border-color: rgba(255, 255, 255, 0.07);
+        box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+      }
+      .surface-card:after,
+      .surface-strong:after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 38%, transparent 72%, var(--lux-soft));
+      }
+      .header-shell {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.54));
+      }
+      html.dark .header-shell {
+        background: linear-gradient(180deg, rgba(8, 11, 18, 0.88), rgba(8, 11, 18, 0.7));
       }
       .title-gradient {
-        background: linear-gradient(95deg, #0e7490 0%, #0369a1 55%, #14b8a6 100%);
+        background: linear-gradient(180deg, #0f172a 0%, #334155 58%, #2563eb 100%);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
+        text-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+      }
+      html.dark .title-gradient {
+        background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 58%, #93c5fd 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .brand-badge {
+        background: linear-gradient(145deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 52%, rgba(79, 70, 229, 0.92) 100%);
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      }
+      .brand-title {
+        letter-spacing: 0.02em;
+        text-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+      }
+      .hero-title {
+        letter-spacing: -0.045em;
+        font-feature-settings: 'liga' 1, 'kern' 1, 'cv11' 1;
       }
       .app-orb {
         position: absolute;
@@ -463,30 +546,350 @@ function renderHtml(initData) {
         height: 220px;
         top: 90px;
         left: -70px;
-        background: rgba(34, 211, 238, 0.22);
+        background: rgba(96, 165, 250, 0.14);
       }
       .app-orb-2 {
         width: 240px;
         height: 240px;
         top: 200px;
         right: -90px;
-        background: rgba(56, 189, 248, 0.2);
+        background: rgba(99, 102, 241, 0.12);
       }
       .hero-chip {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 6px 10px;
+        padding: 8px 12px;
         border-radius: 9999px;
-        border: 1px solid rgba(14, 116, 144, 0.16);
-        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 250, 252, 0.74));
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.64);
         font-size: 12px;
-        color: #0f766e;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: #556274;
       }
       html.dark .hero-chip {
-        background: rgba(15, 23, 42, 0.6);
-        border-color: rgba(56, 189, 248, 0.25);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.62));
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 12px 30px rgba(2, 8, 23, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        color: #cbd5e1;
+      }
+      .hero-panel {
+        position: relative;
+        box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      }
+      .hero-panel:before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 24px;
+        width: 140px;
+        height: 2px;
+        border-radius: 9999px;
+        background: linear-gradient(90deg, transparent, var(--lux), rgba(147, 197, 253, 0.22), transparent);
+        opacity: 0.92;
+      }
+      .hero-panel:after {
+        content: '';
+        position: absolute;
+        inset: auto 28px 24px auto;
+        width: 96px;
+        height: 96px;
+        border-radius: 9999px;
+        background: radial-gradient(circle, rgba(129, 140, 248, 0.12), transparent 72%);
+        pointer-events: none;
+      }
+      .status-card {
+        border-color: rgba(255, 255, 255, 0.62);
+        box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      }
+      .status-card:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 14px;
+        right: 14px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--lux), rgba(147, 197, 253, 0.3), transparent);
+        opacity: 0.8;
+        z-index: 2;
+      }
+      .status-card:hover {
+        box-shadow: var(--shadow-strong), inset 0 1px 0 rgba(255, 255, 255, 0.52);
+      }
+      html.dark .status-card {
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+      .status-card__header {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.66), rgba(248, 250, 252, 0.8));
+      }
+      html.dark .status-card__header {
+        background: linear-gradient(135deg, rgba(24, 31, 46, 0.78), rgba(15, 23, 42, 0.84));
+      }
+      .ip-glow {
+        text-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+      }
+      .subtle-pill {
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(241, 245, 249, 0.9));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
+      }
+      html.dark .subtle-pill {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: linear-gradient(180deg, rgba(24, 31, 46, 0.84), rgba(15, 23, 42, 0.94));
+      }
+      .icon-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.84));
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(14px);
+      }
+      .icon-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      }
+      html.dark .icon-button {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(15, 23, 42, 0.68));
+        box-shadow: 0 12px 28px rgba(2, 8, 23, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      }
+      .action-button {
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      }
+      .action-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+      }
+      html.dark .action-button {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(15, 23, 42, 0.74));
+        box-shadow: 0 14px 34px rgba(2, 8, 23, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      }
+      .footer-shell {
+        border: 1px solid rgba(255, 255, 255, 0.54);
+        box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.48);
+      }
+      html.dark .footer-shell {
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+      html[data-style="original"] {
+        --bg: #f4f8ff;
+        --bg-2: #f8f7ff;
+        --surface: rgba(255, 255, 255, 0.82);
+        --surface-strong: rgba(255, 255, 255, 0.95);
+        --surface-tint: rgba(240, 249, 255, 0.7);
+        --line: rgba(14, 116, 144, 0.14);
+        --line-strong: rgba(14, 116, 144, 0.22);
+        --text-soft: #4b5563;
+        --brand: #0e7490;
+        --brand-2: #0284c7;
+        --brand-3: #14b8a6;
+        --lux: #14b8a6;
+        --lux-soft: rgba(20, 184, 166, 0.12);
+        --shadow-soft: 0 20px 55px rgba(15, 23, 42, 0.08);
+        --shadow-strong: 0 26px 75px rgba(14, 116, 144, 0.16);
+      }
+      html.dark[data-style="original"] {
+        --bg: #07121d;
+        --bg-2: #101a2d;
+        --surface: rgba(14, 25, 41, 0.74);
+        --surface-strong: rgba(11, 22, 37, 0.94);
+        --surface-tint: rgba(8, 19, 35, 0.82);
+        --line: rgba(56, 189, 248, 0.22);
+        --line-strong: rgba(103, 232, 249, 0.26);
+        --text-soft: #94a3b8;
+        --brand: #f8fafc;
+        --brand-2: #38bdf8;
+        --brand-3: #22d3ee;
+        --lux: #67e8f9;
+        --lux-soft: rgba(103, 232, 249, 0.14);
+        --shadow-soft: 0 24px 60px rgba(2, 8, 23, 0.42);
+        --shadow-strong: 0 32px 80px rgba(2, 132, 199, 0.22);
+      }
+      html[data-style="original"] .header-shell {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.62));
+      }
+      html[data-style="original"] body {
+        background:
+          radial-gradient(60rem 60rem at -15% -20%, rgba(34, 211, 238, 0.18), transparent 52%),
+          radial-gradient(52rem 52rem at 120% -10%, rgba(59, 130, 246, 0.14), transparent 46%),
+          radial-gradient(40rem 40rem at 50% 110%, rgba(14, 165, 233, 0.07), transparent 58%),
+          linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);
+        background-attachment: fixed;
+      }
+      html[data-style="original"] .app-shell:before {
+        opacity: 0.34;
+        background-image: linear-gradient(rgba(14, 116, 144, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 116, 144, 0.05) 1px, transparent 1px);
+      }
+      html.dark[data-style="original"] .header-shell {
+        background: linear-gradient(180deg, rgba(4, 10, 20, 0.9), rgba(4, 10, 20, 0.68));
+      }
+      html[data-style="original"] .title-gradient {
+        background: linear-gradient(95deg, #0e7490 0%, #0369a1 55%, #14b8a6 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 8px 30px rgba(14, 116, 144, 0.18);
+      }
+      html.dark[data-style="original"] .title-gradient {
+        background: linear-gradient(95deg, #67e8f9 0%, #38bdf8 55%, #22d3ee 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      html[data-style="original"] .brand-badge {
+        background: linear-gradient(135deg, #06b6d4 0%, #0284c7 55%, #0ea5e9 100%);
+        box-shadow: 0 18px 36px rgba(14, 165, 233, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+      }
+      html[data-style="original"] .brand-title {
+        letter-spacing: 0.08em;
+      }
+      html[data-style="original"] .hero-title {
+        letter-spacing: 0.01em;
+      }
+      html[data-style="original"] .app-orb-1 {
+        background: rgba(34, 211, 238, 0.22);
+      }
+      html[data-style="original"] .app-orb-2 {
+        background: rgba(56, 189, 248, 0.2);
+      }
+      html[data-style="original"] .hero-chip {
+        border-color: rgba(14, 116, 144, 0.15);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(236, 254, 255, 0.76));
+        box-shadow: 0 14px 28px rgba(14, 116, 144, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+        color: #0f766e;
+      }
+      html.dark[data-style="original"] .hero-chip {
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(8, 47, 73, 0.5));
+        border-color: rgba(56, 189, 248, 0.22);
+        box-shadow: 0 14px 34px rgba(2, 8, 23, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.05);
         color: #67e8f9;
+      }
+      html[data-style="original"] .hero-panel:before {
+        width: 180px;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.8), rgba(20, 184, 166, 0.18), transparent);
+      }
+      html[data-style="original"] .hero-panel:after {
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(circle, rgba(20, 184, 166, 0.12), transparent 70%);
+      }
+      html[data-style="original"] .status-card:before {
+        background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.85), rgba(34, 211, 238, 0.32), transparent);
+      }
+      html[data-style="apple"] {
+        --bg: #f5f7fa;
+        --bg-2: #edf1f7;
+        --surface: rgba(255, 255, 255, 0.72);
+        --surface-strong: rgba(255, 255, 255, 0.86);
+        --surface-tint: rgba(246, 248, 251, 0.8);
+        --line: rgba(15, 23, 42, 0.06);
+        --line-strong: rgba(96, 165, 250, 0.16);
+        --text-soft: #667085;
+        --brand: #111827;
+        --brand-2: #3b82f6;
+        --brand-3: #93c5fd;
+        --lux: #7aa2ff;
+        --lux-soft: rgba(122, 162, 255, 0.12);
+        --shadow-soft: 0 20px 56px rgba(15, 23, 42, 0.08);
+        --shadow-strong: 0 28px 78px rgba(15, 23, 42, 0.1);
+      }
+      html.dark[data-style="apple"] {
+        --bg: #050912;
+        --bg-2: #0a0f19;
+        --surface: rgba(12, 18, 29, 0.74);
+        --surface-strong: rgba(8, 12, 22, 0.88);
+        --surface-tint: rgba(10, 16, 28, 0.84);
+        --line: rgba(148, 163, 184, 0.1);
+        --line-strong: rgba(147, 197, 253, 0.18);
+        --text-soft: #98a4b6;
+        --brand: #f8fafc;
+        --brand-2: #93c5fd;
+        --brand-3: #bfdbfe;
+        --lux: #9cc0ff;
+        --lux-soft: rgba(156, 192, 255, 0.12);
+        --shadow-soft: 0 22px 60px rgba(2, 8, 23, 0.42);
+        --shadow-strong: 0 30px 80px rgba(2, 8, 23, 0.32);
+      }
+      html[data-style="apple"] .header-shell {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.64));
+      }
+      html[data-style="apple"] body {
+        background:
+          radial-gradient(54rem 54rem at -12% -18%, rgba(191, 219, 254, 0.18), transparent 52%),
+          radial-gradient(44rem 44rem at 118% -6%, rgba(148, 163, 184, 0.1), transparent 46%),
+          radial-gradient(36rem 36rem at 50% 110%, rgba(255, 255, 255, 0.38), transparent 56%),
+          linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);
+        background-attachment: fixed;
+      }
+      html[data-style="apple"] .app-shell:before {
+        opacity: 0.26;
+        background-image: linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+      }
+      html.dark[data-style="apple"] .header-shell {
+        background: linear-gradient(180deg, rgba(7, 10, 16, 0.82), rgba(7, 10, 16, 0.64));
+      }
+      html[data-style="apple"] .title-gradient {
+        background: linear-gradient(180deg, #111827 0%, #4b5563 66%, #60a5fa 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+      html.dark[data-style="apple"] .title-gradient {
+        background: linear-gradient(180deg, #ffffff 0%, #dbe3ee 68%, #93c5fd 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      html[data-style="apple"] .brand-badge {
+        background: linear-gradient(145deg, rgba(17, 24, 39, 0.96) 0%, rgba(59, 130, 246, 0.82) 100%);
+        box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+      }
+      html[data-style="apple"] .brand-title {
+        letter-spacing: -0.01em;
+      }
+      html[data-style="apple"] .hero-title {
+        letter-spacing: -0.055em;
+      }
+      html[data-style="apple"] .app-orb-1 {
+        background: rgba(148, 163, 184, 0.14);
+      }
+      html[data-style="apple"] .app-orb-2 {
+        background: rgba(96, 165, 250, 0.1);
+      }
+      html[data-style="apple"] .hero-chip {
+        border-color: rgba(148, 163, 184, 0.14);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.78));
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        color: #526174;
+      }
+      html.dark[data-style="apple"] .hero-chip {
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.6));
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 12px 30px rgba(2, 8, 23, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        color: #d6deea;
+      }
+      html[data-style="apple"] .hero-panel:before {
+        width: 120px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.75), rgba(191, 219, 254, 0.28), transparent);
+      }
+      html[data-style="apple"] .hero-panel:after {
+        width: 90px;
+        height: 90px;
+        background: radial-gradient(circle, rgba(191, 219, 254, 0.14), transparent 72%);
+      }
+      html[data-style="apple"] .status-card:before {
+        background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.55), rgba(191, 219, 254, 0.22), transparent);
       }
       .ip-addr {
         word-break: break-all;
@@ -521,12 +924,29 @@ function renderHtml(initData) {
       }
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button:focus-visible,
+      a:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(107, 124, 255, 0.18);
+      }
       ::-webkit-scrollbar { width: 8px; height: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: #67b8d1; border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: #2f94b6; }
-      .dark ::-webkit-scrollbar-thumb { background: #236a86; }
-      .dark ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+      ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+      .dark ::-webkit-scrollbar-thumb { background: #475569; }
+      .dark ::-webkit-scrollbar-thumb:hover { background: #93c5fd; }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
     </style>
   </head>
   <body>
@@ -881,7 +1301,45 @@ function renderHtml(initData) {
         });
       };
 
+      const STYLE_PRESETS = [
+        { id: 'linear', label: '冷峻', dotClass: 'bg-indigo-500' },
+        { id: 'original', label: '原始', dotClass: 'bg-cyan-500' },
+        { id: 'apple', label: 'Apple', dotClass: 'bg-sky-400' },
+      ];
+      const STYLE_PRESET_MAP = Object.fromEntries(STYLE_PRESETS.map((preset) => [preset.id, preset]));
+      const DEFAULT_STYLE_PRESET = 'apple';
+      const normalizeStylePreset = (value) => STYLE_PRESET_MAP[value] ? value : DEFAULT_STYLE_PRESET;
+      const getNextStylePreset = (current) => {
+        const index = STYLE_PRESETS.findIndex((preset) => preset.id === normalizeStylePreset(current));
+        return STYLE_PRESETS[(index + 1) % STYLE_PRESETS.length].id;
+      };
+      const persistStylePreset = (value) => {
+        const nextPreset = normalizeStylePreset(value);
+        document.documentElement.dataset.style = nextPreset;
+        localStorage.setItem('style-preset', nextPreset);
+        return nextPreset;
+      };
+
       // --- 主题切换组件 ---
+      const StylePresetToggle = ({ value, onChange }) => {
+        const currentPreset = STYLE_PRESET_MAP[normalizeStylePreset(value)];
+        const cyclePreset = useCallback(() => {
+          onChange(getNextStylePreset(value));
+        }, [onChange, value]);
+
+        return (
+          <button
+            onClick={cyclePreset}
+            className="icon-button gap-2 px-3 py-2.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200"
+            aria-label={'切换界面风格，当前为 ' + currentPreset.label}
+            title={'切换界面风格，当前为 ' + currentPreset.label}
+          >
+            <span className={'h-2 w-2 rounded-full ' + currentPreset.dotClass}></span>
+            <span className="text-xs font-medium tracking-[0.02em]">{currentPreset.label}</span>
+          </button>
+        );
+      };
+
       const ThemeToggle = () => {
         const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
 
@@ -900,7 +1358,7 @@ function renderHtml(initData) {
         return (
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-xl text-cyan-700 hover:text-cyan-900 dark:text-cyan-300 dark:hover:text-cyan-100 hover:bg-cyan-50 dark:hover:bg-cyan-900/40 transition-all duration-200 border border-cyan-100 dark:border-cyan-900/40"
+            className="icon-button p-2.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition-all duration-200"
             aria-label={isDark ? '切换到白天模式' : '切换到夜间模式'}
             title={isDark ? '切换到白天模式' : '切换到夜间模式'}
           >
@@ -911,32 +1369,103 @@ function renderHtml(initData) {
 
       // --- 组件 ---
       const SOURCE_TONE = {
-        current: {
-          badge: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-200',
-          text: 'text-cyan-700 dark:text-cyan-300',
-          glow: 'from-cyan-500/30 to-sky-500/5'
+        linear: {
+          current: {
+            badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800/80 dark:text-slate-100',
+            text: 'text-slate-900 dark:text-slate-50',
+            glow: 'from-slate-300/10 via-indigo-400/8 to-transparent'
+          },
+          ipv4: {
+            badge: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-200',
+            text: 'text-blue-700 dark:text-blue-200',
+            glow: 'from-blue-400/12 via-indigo-400/8 to-transparent'
+          },
+          ipv6: {
+            badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-200',
+            text: 'text-indigo-700 dark:text-indigo-200',
+            glow: 'from-indigo-400/12 via-slate-300/8 to-transparent'
+          },
+          ipapi: {
+            badge: 'bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200',
+            text: 'text-violet-700 dark:text-violet-200',
+            glow: 'from-violet-400/12 via-blue-400/8 to-transparent'
+          },
+          default: {
+            badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
+            text: 'text-slate-900 dark:text-slate-50',
+            glow: 'from-slate-300/10 via-indigo-400/8 to-transparent'
+          },
         },
-        ipv4: {
-          badge: 'bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-200',
-          text: 'text-sky-700 dark:text-sky-300',
-          glow: 'from-sky-500/30 to-blue-500/5'
+        original: {
+          current: {
+            badge: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-200',
+            text: 'text-cyan-700 dark:text-cyan-300',
+            glow: 'from-cyan-500/30 to-sky-500/5'
+          },
+          ipv4: {
+            badge: 'bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-200',
+            text: 'text-sky-700 dark:text-sky-300',
+            glow: 'from-sky-500/30 to-blue-500/5'
+          },
+          ipv6: {
+            badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200',
+            text: 'text-blue-700 dark:text-blue-300',
+            glow: 'from-blue-500/30 to-indigo-500/5'
+          },
+          ipapi: {
+            badge: 'bg-teal-100 text-teal-700 dark:bg-teal-900/50 dark:text-teal-200',
+            text: 'text-teal-700 dark:text-teal-300',
+            glow: 'from-teal-500/30 to-cyan-500/5'
+          },
+          default: {
+            badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
+            text: 'text-cyan-700 dark:text-cyan-300',
+            glow: 'from-cyan-500/25 to-sky-500/5'
+          },
         },
-        ipv6: {
-          badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200',
-          text: 'text-blue-700 dark:text-blue-300',
-          glow: 'from-blue-500/30 to-indigo-500/5'
-        },
-        ipapi: {
-          badge: 'bg-teal-100 text-teal-700 dark:bg-teal-900/50 dark:text-teal-200',
-          text: 'text-teal-700 dark:text-teal-300',
-          glow: 'from-teal-500/30 to-cyan-500/5'
+        apple: {
+          current: {
+            badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800/80 dark:text-slate-100',
+            text: 'text-slate-900 dark:text-slate-50',
+            glow: 'from-slate-200/10 via-sky-300/8 to-transparent'
+          },
+          ipv4: {
+            badge: 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-200',
+            text: 'text-sky-700 dark:text-sky-200',
+            glow: 'from-sky-300/12 via-slate-300/8 to-transparent'
+          },
+          ipv6: {
+            badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-200',
+            text: 'text-indigo-700 dark:text-indigo-200',
+            glow: 'from-indigo-300/12 via-slate-300/8 to-transparent'
+          },
+          ipapi: {
+            badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800/80 dark:text-slate-100',
+            text: 'text-slate-800 dark:text-slate-100',
+            glow: 'from-blue-300/12 via-slate-300/8 to-transparent'
+          },
+          default: {
+            badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
+            text: 'text-slate-900 dark:text-slate-50',
+            glow: 'from-slate-200/10 via-sky-300/8 to-transparent'
+          },
         },
       };
 
-      const getSourceTone = (id) => SOURCE_TONE[id] || {
-        badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
-        text: 'text-cyan-700 dark:text-cyan-300',
-        glow: 'from-cyan-500/25 to-sky-500/5'
+      const getSourceTone = (id, stylePreset = DEFAULT_STYLE_PRESET) => {
+        const toneSet = SOURCE_TONE[normalizeStylePreset(stylePreset)] || SOURCE_TONE[DEFAULT_STYLE_PRESET];
+        return toneSet[id] || toneSet.default;
+      };
+
+      const WEBRTC_TONE_SOURCE_MAP = {
+        google: 'ipv4',
+        cloudflare: 'current',
+        nextcloud: 'ipapi',
+        miwifi: 'ipv6',
+      };
+
+      const getWebRTCTone = (id, stylePreset = DEFAULT_STYLE_PRESET) => {
+        return getSourceTone(WEBRTC_TONE_SOURCE_MAP[id] || 'default', stylePreset);
       };
 
       const isIPv6Address = (value) => typeof value === 'string' && value.includes(':');
@@ -977,7 +1506,7 @@ function renderHtml(initData) {
 
       const SectionTitle = ({ icon: Icon, title }) => (
         <div className="flex items-center gap-2 mb-3 text-slate-800 dark:text-slate-200 pb-2 border-b border-slate-100 dark:border-slate-700">
-            <Icon className="w-5 h-5 text-cyan-600 dark:text-cyan-300" />
+            <Icon className="w-5 h-5 text-indigo-500 dark:text-indigo-300" />
             <h3 className="font-bold text-base">{title}</h3>
         </div>
       );
@@ -1207,15 +1736,15 @@ function renderHtml(initData) {
         );
       };
 
-      const StatusCard = ({ data, onViewDetails, onRetry }) => {
+      const StatusCard = ({ data, onViewDetails, onRetry, stylePreset }) => {
         const { id, sourceName, sourceUrl, sourceIcon, ip, isp, countryCode, countryName, isLoading, error } = data;
-        const tone = getSourceTone(id);
+        const tone = getSourceTone(id, stylePreset);
         const canViewDetails = !isLoading && !error && typeof onViewDetails === 'function' && isQueryableTarget(ip);
 
         return (
-          <div className="surface-card group rounded-2xl hover:-translate-y-1 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col relative">
+          <div className="status-card surface-card group rounded-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col relative">
             <div className={'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br ' + tone.glow}></div>
-            <div className="relative p-4 border-b border-cyan-100/70 dark:border-cyan-900/50 bg-gradient-to-r from-cyan-50/80 to-sky-50/60 dark:from-cyan-900/30 dark:to-slate-900/20 flex items-center justify-between">
+            <div className="status-card__header relative p-4 border-b border-slate-200/70 dark:border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {sourceIcon ? (
                   <img src={sourceIcon} alt={sourceName} className="w-5 h-5 rounded-md object-cover" />
@@ -1224,13 +1753,13 @@ function renderHtml(initData) {
                     {sourceName.substring(0, 2).toUpperCase()}
                   </div>
                 )}
-                <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{sourceName}</h3>
+                <h3 className="font-semibold tracking-[0.04em] text-slate-800 dark:text-slate-100 text-sm">{sourceName}</h3>
                 <a
                   href={sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={sourceName + ' 外链'}
-                  className="opacity-50 group-hover:opacity-100 ml-1 inline-flex items-center justify-center w-6 h-6 rounded-full text-slate-500 hover:text-cyan-600 dark:text-slate-400 dark:hover:text-cyan-300 hover:bg-cyan-100/50 dark:hover:bg-cyan-800/50 transition-all duration-300 hover:scale-110"
+                  className="opacity-50 group-hover:opacity-100 ml-1 inline-flex items-center justify-center w-6 h-6 rounded-full text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/10 transition-all duration-300 hover:scale-110"
                 >
                     <ExternalLink className="w-4 h-4 ml-0.5 mb-0.5" />
                 </a>
@@ -1260,13 +1789,13 @@ function renderHtml(initData) {
                       className="group relative inline-block cursor-pointer bg-transparent border-0 p-0"
                       onClick={() => onViewDetails(ip)}
                     >
-                      <div title={ip} className="hover:text-cyan-900 dark:hover:text-cyan-200 transition-colors max-w-full">
+                      <div title={ip} className="ip-glow hover:text-slate-950 dark:hover:text-white transition-colors max-w-full">
                         <CardIpText ip={ip} toneText={tone.text} />
                       </div>
                       <div className="text-xs text-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-4 left-1/2 transform -translate-x-1/2 whitespace-nowrap">点击查看详情</div>
                     </button>
                   ) : (
-                    <div title={ip} className="max-w-full">
+                    <div title={ip} className="ip-glow max-w-full">
                       <CardIpText ip={ip} toneText={tone.text} />
                     </div>
                   )}
@@ -1278,7 +1807,7 @@ function renderHtml(initData) {
 
                   <div className="mt-1 h-7 flex items-center justify-center">
                     {isp && isp !== '-' ? (
-                      <div className="text-xs text-slate-400 font-medium px-2 py-1 bg-slate-50 dark:bg-slate-700 rounded-lg inline-block max-w-full truncate">
+                      <div className="subtle-pill text-xs text-slate-500 dark:text-slate-300 font-medium px-2.5 py-1 rounded-lg inline-block max-w-full truncate">
                         {isp}
                       </div>
                     ) : (
@@ -1293,41 +1822,42 @@ function renderHtml(initData) {
       };
 
       // --- 泄漏检测卡片组件 ---
-      const LeakDetectionCard = ({ icon: Icon, title, subtitle = '', isLoading, status, statusText, showStatus = true, children }) => {
+      const LeakDetectionCard = ({ icon: Icon, title, subtitle = '', isLoading, status, statusText, showStatus = true, tone, children }) => {
         const statusConfig = {
-          safe: { bg: 'bg-emerald-50/70 dark:bg-emerald-900/20', border: 'border-emerald-200/80 dark:border-emerald-800/60', badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400', icon: '✅' },
-          leak: { bg: 'bg-rose-50/70 dark:bg-rose-900/20', border: 'border-rose-200/80 dark:border-rose-800/60', badge: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400', icon: '⚠️' },
-          unknown: { bg: 'bg-cyan-50/40 dark:bg-slate-800/80', border: 'border-cyan-200/70 dark:border-cyan-900/50', badge: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400', icon: '❓' },
-          unsupported: { bg: 'bg-slate-50/80 dark:bg-slate-800', border: 'border-slate-200 dark:border-slate-700', badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400', icon: '🚫' },
+          safe: { badge: 'border border-emerald-200/70 bg-emerald-50/90 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300' },
+          leak: { badge: 'border border-rose-200/70 bg-rose-50/90 text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-300' },
+          unknown: { badge: 'border border-slate-200/70 bg-slate-100/90 text-slate-600 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-300' },
+          unsupported: { badge: 'border border-amber-200/70 bg-amber-50/90 text-amber-700 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300' },
         };
         const cfg = statusConfig[status] || statusConfig.unknown;
+        const resolvedTone = tone || getSourceTone('default');
 
         return (
-          <div className={'rounded-2xl shadow-sm border ' + cfg.border + ' ' + cfg.bg + ' overflow-hidden transition-all duration-300 hover:shadow-lg'}>
-            <div className="p-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="bg-cyan-100 dark:bg-cyan-900/40 p-1.5 rounded-lg text-cyan-700 dark:text-cyan-300">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                <div>
-                  <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{title}</h3>
-                  {subtitle ? <div className="mt-0.5 text-[11px] font-mono text-slate-400 dark:text-slate-500 break-all">{subtitle}</div> : null}
+          <div className="status-card surface-card group rounded-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col relative">
+            <div className={'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br ' + resolvedTone.glow}></div>
+            <div className="status-card__header relative p-4 border-b border-slate-200/70 dark:border-white/10 flex items-center justify-between gap-3">
+              <div className="min-w-0 flex items-center gap-2">
+                <div className={'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ' + resolvedTone.badge}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold tracking-[0.04em] text-slate-800 dark:text-slate-100 text-sm">{title}</h3>
+                  {subtitle ? <div className="mt-0.5 text-[11px] font-mono text-slate-400 dark:text-slate-500 truncate">{subtitle}</div> : null}
                 </div>
               </div>
               {isLoading ? (
-                <RefreshCcw className="w-4 h-4 text-indigo-400 animate-spin" />
+                <RefreshCcw className={'w-4 h-4 animate-spin ' + resolvedTone.text} />
               ) : showStatus ? (
-                <span className={'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ' + cfg.badge}>
-                  {cfg.icon} {statusText}
+                <span className={'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ' + cfg.badge}>
+                  {statusText}
                 </span>
               ) : null}
             </div>
-            <div className="p-5">
+            <div className="relative p-5 flex-1 flex flex-col justify-center">
               {isLoading ? (
                 <div className="space-y-3 animate-pulse">
-                  <div className="h-4 bg-slate-200/60 dark:bg-slate-700 rounded w-3/4"></div>
-                  <div className="h-4 bg-slate-200/60 dark:bg-slate-700 rounded w-1/2"></div>
-                  <div className="h-4 bg-slate-200/60 dark:bg-slate-700 rounded w-2/3"></div>
+                  <div className="h-6 bg-slate-100 dark:bg-slate-700 rounded w-3/4 mx-auto"></div>
+                  <div className="h-4 bg-slate-100 dark:bg-slate-700 rounded w-1/2 mx-auto"></div>
                 </div>
               ) : children}
             </div>
@@ -1335,31 +1865,32 @@ function renderHtml(initData) {
         );
       };
 
-      const WebRTCProviderCard = ({ provider, isLoading }) => {
+      const WebRTCProviderCard = ({ provider, isLoading, stylePreset }) => {
         const providerStatus = isLoading
           ? { status: 'unknown', text: '检测中...' }
           : deriveWebRTCStatus(provider);
+        const tone = getWebRTCTone(provider.id, stylePreset);
 
         return (
           <LeakDetectionCard
             icon={Wifi}
             title={provider.title}
-            subtitle={provider.address}
             isLoading={isLoading}
             status={providerStatus.status}
             statusText={providerStatus.text}
             showStatus={true}
+            tone={tone}
           >
             {provider.error && (!provider.ip || provider.ip === '-') ? (
               <div className="text-center">
-                <div className="mx-auto max-w-full rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-sm font-medium text-amber-700 dark:border-amber-900/60 dark:bg-amber-900/20 dark:text-amber-300 break-words">
+                <div className="mx-auto max-w-full rounded-xl border border-amber-200/70 bg-amber-50/80 px-3 py-2 text-sm font-medium text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-300 break-words">
                   {provider.error}
                 </div>
               </div>
             ) : (
               <div className="text-center">
-                <div title={provider.ip || '-'} className="max-w-full">
-                  <CardIpText ip={provider.ip || '-'} toneText="text-cyan-700 dark:text-cyan-300" />
+                <div title={provider.ip || '-'} className="ip-glow max-w-full">
+                  <CardIpText ip={provider.ip || '-'} toneText={tone.text} />
                 </div>
 
                 <div className="mt-3 h-7 flex items-center justify-center gap-2 text-sm text-slate-600 dark:text-slate-300">
@@ -1375,6 +1906,12 @@ function renderHtml(initData) {
                     </>
                   )}
                 </div>
+
+                <div className="mt-1 h-7 flex items-center justify-center">
+                  <div className="subtle-pill text-xs text-slate-500 dark:text-slate-300 font-medium px-2.5 py-1 rounded-lg inline-block max-w-full truncate">
+                    {provider.address}
+                  </div>
+                </div>
               </div>
             )}
           </LeakDetectionCard>
@@ -1382,7 +1919,7 @@ function renderHtml(initData) {
       };
 
       // --- 泄漏检测区域 ---
-      const LeakDetectionSection = () => {
+      const LeakDetectionSection = ({ stylePreset }) => {
         const [webrtc, setWebrtc] = useState({ loading: true, providers: createEmptyWebRTCProviders(), error: null });
         const [lastCheckedAt, setLastCheckedAt] = useState(null);
         const mountedRef = useRef(true);
@@ -1437,7 +1974,7 @@ function renderHtml(initData) {
                     type="button"
                     onClick={runLeakChecks}
                     disabled={webrtc.loading}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                    className="action-button inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 disabled:opacity-60 disabled:cursor-not-allowed transition"
                   >
                     <RefreshCcw className={'w-4 h-4 ' + (webrtc.loading ? 'animate-spin text-indigo-500' : 'text-slate-500')} />
                     重新检测
@@ -1451,7 +1988,7 @@ function renderHtml(initData) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
                 {webrtc.providers.map((provider) => (
-                <WebRTCProviderCard key={provider.id} provider={provider} isLoading={webrtc.loading} />
+                <WebRTCProviderCard key={provider.id} provider={provider} isLoading={webrtc.loading} stylePreset={stylePreset} />
                 ))}
               </div>
           </div>
@@ -1608,6 +2145,7 @@ function renderHtml(initData) {
         const [detailData, setDetailData] = useState(null);
         const [detailLoading, setDetailLoading] = useState(false);
         const [detailError, setDetailError] = useState(null);
+        const [stylePreset, setStylePreset] = useState(() => normalizeStylePreset(document.documentElement.dataset.style || localStorage.getItem('style-preset')));
 
         const readyCount = rows.filter((row) => isSuccessfulRowResult(row)).length;
         const errorCount = rows.filter((row) => !row.isLoading && !!row.error).length;
@@ -1627,6 +2165,10 @@ function renderHtml(initData) {
         useEffect(() => {
           loadData();
         }, [loadData]);
+
+        useEffect(() => {
+          persistStylePreset(stylePreset);
+        }, [stylePreset]);
 
         const handleViewDetails = async (ip) => {
           if (!isQueryableTarget(ip)) return;
@@ -1649,17 +2191,18 @@ function renderHtml(initData) {
           <div className="app-shell min-h-screen font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
             <div className="app-orb app-orb-1"></div>
             <div className="app-orb app-orb-2"></div>
-            <header className="surface-card border-b border-cyan-100/80 dark:border-cyan-900/50 sticky top-0 z-30 bg-opacity-85 dark:bg-opacity-85 backdrop-blur-xl">
+            <header className="header-shell surface-card border-b border-slate-200/70 dark:border-white/10 sticky top-0 z-30 bg-opacity-85 dark:bg-opacity-85 backdrop-blur-xl">
               <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="bg-gradient-to-br from-cyan-500 to-sky-600 p-1.5 rounded-xl text-white shadow-sm shadow-cyan-300/50 dark:shadow-cyan-900/40 animate-float">
+                  <div className="brand-badge p-1.5 rounded-xl text-white">
                       <ShieldCheck className="w-6 h-6" />
                   </div>
-                  <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">IP 哨兵</h1>
+                  <h1 className="brand-title text-[1.02rem] font-semibold text-slate-900 dark:text-white">IP 哨兵</h1>
                 </div>
                 <div className="flex items-center gap-2">
+                   <StylePresetToggle value={stylePreset} onChange={setStylePreset} />
                    <ThemeToggle />
-                    <a href="https://github.com/jy02739244/ip-query-worker" target="_blank" rel="noreferrer" className="text-slate-500 hover:text-cyan-700 dark:hover:text-cyan-300 transition">
+                    <a href="https://github.com/jy02739244/ip-query-worker" target="_blank" rel="noreferrer" className="icon-button p-2.5 text-slate-500 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition">
                        <Github className="w-5 h-5" />
                     </a>
                  </div>
@@ -1668,12 +2211,12 @@ function renderHtml(initData) {
 
             <main className="relative z-10 py-6">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="mb-5 text-center md:text-left surface-strong rounded-3xl p-5 md:p-6">
+                <div className="hero-panel mb-5 text-center md:text-left surface-strong rounded-3xl p-5 md:p-6">
                 <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
                   <div>
-                    <h2 className="text-lg md:text-xl font-bold mb-1.5 title-gradient">网络身份分析</h2>
-                    <p className="text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
-                      分析各服务商下的连接可见性。检测 IP 暴露情况，通过实时风控评分检查代理/VPN 泄漏。
+                    <h2 className="hero-title text-[1.45rem] md:text-[2.05rem] font-semibold mb-2 title-gradient">网络身份分析</h2>
+                    <p className="text-slate-600/90 dark:text-slate-300/90 max-w-xl leading-relaxed md:text-[15px]">
+                      分析各服务商下的连接可见性,检测 IP 暴露情况。
                     </p>
                   </div>
                   <div className="flex flex-wrap justify-center md:justify-end gap-2">
@@ -1689,6 +2232,7 @@ function renderHtml(initData) {
                     <StatusCard
                       key={row.id}
                       data={row}
+                      stylePreset={stylePreset}
                       onViewDetails={handleViewDetails}
                       onRetry={() => {
                           const fetchFn = FETCH_MAP[row.id];
@@ -1702,10 +2246,10 @@ function renderHtml(initData) {
 
                 {/* --- 泄漏检测区域 --- */}
                 <div className="surface-strong rounded-3xl p-5 md:p-6 mt-8">
-                  <LeakDetectionSection />
+                  <LeakDetectionSection stylePreset={stylePreset} />
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-cyan-100 dark:border-cyan-900/50 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500 dark:text-slate-400 gap-4">
+                <div className="footer-shell surface-strong mt-12 px-5 py-5 flex flex-col md:flex-row items-center justify-between text-sm text-slate-500 dark:text-slate-400 gap-4 rounded-3xl">
                     <div className="flex items-center gap-2">
                         <Globe className="w-4 h-4" />
                         <span>基于 Cloudflare & React 构建</span>
