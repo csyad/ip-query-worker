@@ -1,16 +1,143 @@
 // --- 安全辅助函数 ---
 
-// IP 地址格式校验（防止 SSRF）
-function isValidIpOrDomain(input) {
-  if (!input) return false;
-  // IPv4
-  const ipv4Regex = /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/;
-  // IPv6（简化版，允许常见格式）
-  const ipv6Regex = /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/;
-  // 域名
-  const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/;
-  return ipv4Regex.test(input) || ipv6Regex.test(input) || domainRegex.test(input);
+function normalizeTextValue(input) {
+  if (typeof input === 'string') return input.trim();
+  if (input === null || input === undefined) return '';
+  return String(input).trim();
 }
+
+function isPlaceholderValue(input) {
+  const value = normalizeTextValue(input);
+  if (!value) return true;
+  if (['-', '...', '未知', '加载中...', 'N/A'].includes(value)) return true;
+  return value.includes('加载') || value.includes('失败');
+}
+
+function isValidIPv4Address(input) {
+  const value = normalizeTextValue(input);
+  const ipv4Regex = /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/;
+  return ipv4Regex.test(value);
+}
+
+function isValidIPv6Address(input) {
+  const value = normalizeTextValue(input);
+  if (!value || !value.includes(':') || value.includes('[') || value.includes(']') || /\s/.test(value)) {
+    return false;
+  }
+
+  if ((value.match(/::/g) || []).length > 1) return false;
+
+  let address = value;
+  let requiredSegmentCount = 8;
+
+  if (value.includes('.')) {
+    const ipv4Match = value.match(/^(.*?)(\d+\.\d+\.\d+\.\d+)$/);
+    if (!ipv4Match) return false;
+
+    const [, rawPrefix, ipv4Part] = ipv4Match;
+    if (!isValidIPv4Address(ipv4Part)) return false;
+    if (!rawPrefix.endsWith(':')) return false;
+
+    address = rawPrefix.endsWith('::') ? rawPrefix : rawPrefix.slice(0, -1);
+    requiredSegmentCount = 6;
+  }
+
+  const [head = '', tail = ''] = address.split('::');
+  const parseSegments = (part) => {
+    if (!part) return [];
+
+    const segments = part.split(':');
+    if (segments.some((segment) => !segment || !/^[0-9a-fA-F]{1,4}$/.test(segment))) {
+      return null;
+    }
+
+    return segments;
+  };
+
+  const headSegments = parseSegments(head);
+  const tailSegments = parseSegments(tail);
+
+  if (!headSegments || !tailSegments) return false;
+
+  const segmentCount = headSegments.length + tailSegments.length;
+  if (value.includes('::')) return segmentCount < requiredSegmentCount;
+  return segmentCount === requiredSegmentCount;
+}
+
+function isValidIpAddress(input) {
+  return isValidIPv4Address(input) || isValidIPv6Address(input);
+}
+
+function isValidDomainName(input) {
+  const value = normalizeTextValue(input);
+  const labels = value.split('.');
+  if (labels.length > 1 && labels.every((label) => /^\d+$/.test(label))) return false;
+  const domainRegex = /^(?=.{1,253}$)(?!-)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)(?:\.(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?))+$/;
+  return domainRegex.test(value);
+}
+
+function isQueryableTarget(input) {
+  const value = normalizeTextValue(input);
+  if (isPlaceholderValue(value)) return false;
+  return isValidIpAddress(value) || isValidDomainName(value);
+}
+
+function validateQueryTarget(input) {
+  return isQueryableTarget(input);
+}
+
+function normalizeCountryCode(input) {
+  const value = normalizeTextValue(input).toUpperCase();
+  return /^[A-Z0-9]{2}$/.test(value) ? value : '';
+}
+
+function parseTraceResponse(text) {
+  const raw = normalizeTextValue(text);
+  const ip = normalizeTextValue(raw.match(/(?:^|\n)ip=([^\n]+)/)?.[1]);
+
+  if (!isValidIpAddress(ip)) {
+    return { error: '响应中缺少有效 IP' };
+  }
+
+  const countryCode = normalizeCountryCode(raw.match(/(?:^|\n)loc=([^\n]+)/)?.[1]);
+  return {
+    ip,
+    countryCode,
+    countryName: countryCode || '未知位置',
+    error: undefined,
+  };
+}
+
+function deriveWebRTCStatus(provider) {
+  const detectedIp = normalizeTextValue(provider?.ip);
+
+  if (!provider?.supported) return { status: 'unsupported', text: '不支持' };
+  if (isValidIpAddress(detectedIp)) return { status: 'safe', text: '已检测' };
+  if (provider?.error) return { status: 'unknown', text: '未检出' };
+  return { status: 'unknown', text: '无结果' };
+}
+
+const CLIENT_SHARED_HELPERS = [
+  normalizeTextValue,
+  isPlaceholderValue,
+  isValidIPv4Address,
+  isValidIPv6Address,
+  isValidIpAddress,
+  isValidDomainName,
+  isQueryableTarget,
+  validateQueryTarget,
+  normalizeCountryCode,
+  parseTraceResponse,
+  deriveWebRTCStatus,
+].map((fn) => fn.toString()).join('\n');
+
+export {
+  validateQueryTarget,
+  isQueryableTarget,
+  parseTraceResponse,
+  deriveWebRTCStatus,
+  normalizeCountryCode,
+};
 
 // 转义 JSON 字符串以安全嵌入 <script> 标签（防止 XSS）
 function safeJsonStringify(data) {
@@ -110,8 +237,8 @@ export default {
 
       const ip = url.searchParams.get('q');
 
-      // 输入校验：防止 SSRF 攻击
-      if (ip && !isValidIpOrDomain(ip)) {
+      // 输入校验：拦截无效值与占位值，避免命中上游
+      if (ip && !validateQueryTarget(ip)) {
         return new Response(JSON.stringify({ error: '无效的 IP 地址或域名格式' }), {
           status: 400,
           headers: {
@@ -219,6 +346,14 @@ function renderHtml(initData) {
     <script>
       // 注入服务端获取的初始数据（已转义，防止 XSS）
       window.CF_DATA = ${safeJsonStringify(initData)};
+
+      // 兼容打包器在 Function#toString 输出中插入的 __name 辅助函数
+      const __name = (target, value) => {
+        Object.defineProperty(target, 'name', { value, configurable: true });
+        return target;
+      };
+
+      ${CLIENT_SHARED_HELPERS}
 
       tailwind.config = {
         darkMode: 'class',
@@ -446,7 +581,7 @@ function renderHtml(initData) {
       };
 
       function getFlagEmoji(countryCode) {
-        if (!countryCode || countryCode.length !== 2) return '🏳️';
+        if (!/^[A-Z]{2}$/i.test(String(countryCode || ''))) return '🏳️';
         const codePoints = countryCode
           .toUpperCase()
           .split('')
@@ -568,15 +703,32 @@ function renderHtml(initData) {
         supported: true,
       }));
 
-      const isIPv4String = (ip) => {
-        const parts = String(ip || '').split('.');
-        return parts.length === 4 && parts.every((part) => /^\\d+$/.test(part) && Number(part) >= 0 && Number(part) <= 255);
+      const createSourceErrorResult = (error) => ({
+        ip: '-',
+        isp: '-',
+        countryCode: '',
+        countryName: '未知位置',
+        error,
+      });
+
+      const buildSourceSuccessResult = ({ ip, isp = '-', countryCode = '', countryName = '' }) => {
+        if (!isValidIpAddress(ip)) return createSourceErrorResult('响应中缺少有效 IP');
+
+        const normalizedCountryCode = normalizeCountryCode(countryCode);
+        return {
+          ip: normalizeTextValue(ip),
+          isp: normalizeTextValue(isp) || '-',
+          countryCode: normalizedCountryCode,
+          countryName: normalizeTextValue(countryName) || normalizedCountryCode || '未知位置',
+          error: undefined,
+        };
       };
 
-      const isIPv6String = (ip) => {
-        const value = String(ip || '').trim();
-        return value.includes(':') && /^[0-9a-fA-F:]+$/.test(value);
-      };
+      const isSuccessfulRowResult = (row) => !row?.isLoading && !row?.error && isValidIpAddress(row?.ip);
+
+      const isIPv4String = (ip) => isValidIPv4Address(ip);
+
+      const isIPv6String = (ip) => isValidIPv6Address(ip);
 
       const isPrivateIPAddress = (ip) => {
         if (isIPv4String(ip)) {
@@ -606,7 +758,7 @@ function renderHtml(initData) {
         return ip;
       };
 
-      const getWebRTCCountryCode = (data) => String(data?.country_code || '').toUpperCase();
+      const getWebRTCCountryCode = (data) => normalizeCountryCode(data?.country_code);
 
       const getWebRTCRegionDisplay = (data) => {
         const countryCode = getWebRTCCountryCode(data);
@@ -1058,6 +1210,7 @@ function renderHtml(initData) {
       const StatusCard = ({ data, onViewDetails, onRetry }) => {
         const { id, sourceName, sourceUrl, sourceIcon, ip, isp, countryCode, countryName, isLoading, error } = data;
         const tone = getSourceTone(id);
+        const canViewDetails = !isLoading && !error && typeof onViewDetails === 'function' && isQueryableTarget(ip);
 
         return (
           <div className="surface-card group rounded-2xl hover:-translate-y-1 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col relative">
@@ -1100,12 +1253,23 @@ function renderHtml(initData) {
                 </div>
               ) : (
                 <div className="text-center">
-                   <div className="group relative inline-block cursor-pointer" onClick={() => onViewDetails(ip)}>
-                       <div title={ip} className="hover:text-cyan-900 dark:hover:text-cyan-200 transition-colors max-w-full">
-                         <CardIpText ip={ip} toneText={tone.text} />
-                       </div>
-                       <div className="text-xs text-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-4 left-1/2 transform -translate-x-1/2 whitespace-nowrap">点击查看详情</div>
-                   </div>
+                  {canViewDetails ? (
+                    <button
+                      type="button"
+                      aria-label={sourceName + ' 详情'}
+                      className="group relative inline-block cursor-pointer bg-transparent border-0 p-0"
+                      onClick={() => onViewDetails(ip)}
+                    >
+                      <div title={ip} className="hover:text-cyan-900 dark:hover:text-cyan-200 transition-colors max-w-full">
+                        <CardIpText ip={ip} toneText={tone.text} />
+                      </div>
+                      <div className="text-xs text-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-4 left-1/2 transform -translate-x-1/2 whitespace-nowrap">点击查看详情</div>
+                    </button>
+                  ) : (
+                    <div title={ip} className="max-w-full">
+                      <CardIpText ip={ip} toneText={tone.text} />
+                    </div>
+                  )}
 
                   <div className="mt-3 h-7 flex items-center justify-center gap-2 text-sm text-slate-600 dark:text-slate-300">
                       <span className="text-xl">{getFlagEmoji(countryCode)}</span>
@@ -1172,15 +1336,9 @@ function renderHtml(initData) {
       };
 
       const WebRTCProviderCard = ({ provider, isLoading }) => {
-        const getProviderStatus = () => {
-          if (isLoading) return { status: 'unknown', text: '检测中...' };
-          if (!provider?.supported) return { status: 'unsupported', text: '不支持' };
-          if (provider?.ip && provider.ip !== '-') return { status: 'safe', text: '已检测' };
-          if (provider?.error) return { status: 'unknown', text: '未检出' };
-          return { status: 'unknown', text: '无结果' };
-        };
-
-        const providerStatus = getProviderStatus();
+        const providerStatus = isLoading
+          ? { status: 'unknown', text: '检测中...' }
+          : deriveWebRTCStatus(provider);
 
         return (
           <LeakDetectionCard
@@ -1291,11 +1449,11 @@ function renderHtml(initData) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              {webrtc.providers.map((provider) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                {webrtc.providers.map((provider) => (
                 <WebRTCProviderCard key={provider.id} provider={provider} isLoading={webrtc.loading} />
-              ))}
-            </div>
+                ))}
+              </div>
           </div>
         );
       };
@@ -1306,11 +1464,10 @@ function renderHtml(initData) {
           const res = await fetchWithTimeout(url);
           if (!res.ok) throw new Error('网络响应错误');
           const text = await res.text();
-          const ip = text.match(/ip=([^\\n]+)/)?.[1] || '-';
-          const country = text.match(/loc=([^\\n]+)/)?.[1] || '-';
-          return { ip, countryCode: country, countryName: country, error: undefined };
+          const parsed = parseTraceResponse(text);
+          return parsed.error ? createSourceErrorResult(parsed.error) : { ...parsed, isp: '-' };
         } catch (e) {
-          return { error: '连接超时或被拦截' };
+          return createSourceErrorResult('连接超时或被拦截');
         }
       };
 
@@ -1326,8 +1483,8 @@ function renderHtml(initData) {
             const res = await fetchWithTimeout('https://api-ipv4.ip.sb/geoip');
             if (!res.ok) throw new Error('Error');
             const data = await res.json();
-            return { ip: data.ip, isp: data.isp, countryCode: data.country_code, countryName: data.country, error: undefined };
-          } catch (e) { return { error: '加载失败' }; }
+            return buildSourceSuccessResult({ ip: data.ip, isp: data.isp, countryCode: data.country_code, countryName: data.country });
+          } catch (e) { return createSourceErrorResult('加载失败'); }
         },
         // IPv6
         fetchIpSbV6: async () => {
@@ -1335,17 +1492,16 @@ function renderHtml(initData) {
             const res = await fetchWithTimeout('https://api-ipv6.ip.sb/geoip');
             if (!res.ok) throw new Error('Error');
             const data = await res.json();
-            return { ip: data.ip, isp: data.isp, countryCode: data.country_code, countryName: data.country, error: undefined };
-          } catch (e) { return { error: '加载失败' }; }
+            return buildSourceSuccessResult({ ip: data.ip, isp: data.isp, countryCode: data.country_code, countryName: data.country });
+          } catch (e) { return createSourceErrorResult('加载失败'); }
         },
         // IPAPI.is 基础信息查询 (优先使用官方 API，失败后回退备用端点)
         fetchIpApi: async () => {
-          const parseIpApiResponse = (data) => ({
+          const parseIpApiResponse = (data) => buildSourceSuccessResult({
             ip: data.ip,
             isp: data.asn?.org,
             countryCode: data.location?.country_code,
             countryName: data.location?.country,
-            error: undefined
           });
           try {
             const res = await fetchWithTimeout('https://api.ipapi.is/', {}, 5000);
@@ -1358,11 +1514,12 @@ function renderHtml(initData) {
               if (!res.ok) throw new Error('Error');
               const data = await res.json();
               return parseIpApiResponse(data);
-            } catch (e2) { return { error: '加载失败' }; }
+            } catch (e2) { return createSourceErrorResult('加载失败'); }
           }
         },
         // 详情查询 (使用 Worker 中转)
         fetchIpDetails: async (ip) => {
+          if (!isQueryableTarget(ip)) throw new Error('详情查询目标无效');
           const res = await fetchWithTimeout(\`/api/ipapi?q=\${encodeURIComponent(ip)}\`);
           if (!res.ok) throw new Error('详情查询失败');
           return await res.json();
@@ -1379,7 +1536,7 @@ function renderHtml(initData) {
 
           const enrichedProviders = await Promise.all(
             providers.map(async (provider) => {
-              if (!provider.ip || provider.ip === '-') return provider;
+              if (!isValidIpAddress(provider.ip)) return provider;
 
               try {
                 const details = await ipService.fetchWebRTCRegion(provider.ip);
@@ -1436,8 +1593,8 @@ function renderHtml(initData) {
             sourceIcon: ICONS.cloudflare,
             ip: window.CF_DATA.ip,
             isp: window.CF_DATA.isp,
-            countryCode: window.CF_DATA.country,
-            countryName: window.CF_DATA.country,
+            countryCode: normalizeCountryCode(window.CF_DATA.country),
+            countryName: normalizeCountryCode(window.CF_DATA.country) || '未知位置',
             isLoading: false,
           },
           ...SOURCE_CONFIGS.map(({ id, sourceName, sourceUrl, sourceIcon, isp }) => ({
@@ -1452,9 +1609,9 @@ function renderHtml(initData) {
         const [detailLoading, setDetailLoading] = useState(false);
         const [detailError, setDetailError] = useState(null);
 
-        const readyCount = rows.filter((row) => !row.isLoading && !row.error).length;
-        const errorCount = rows.filter((row) => !!row.error).length;
-        const countryCount = new Set(rows.map((row) => row.countryCode).filter(Boolean)).size;
+        const readyCount = rows.filter((row) => isSuccessfulRowResult(row)).length;
+        const errorCount = rows.filter((row) => !row.isLoading && !!row.error).length;
+        const countryCount = new Set(rows.filter((row) => isSuccessfulRowResult(row)).map((row) => normalizeCountryCode(row.countryCode)).filter(Boolean)).size;
 
         const updateRow = useCallback((id, data) => {
           setRows((prev) => prev.map((row) => (row.id === id ? { ...row, ...data, isLoading: false } : row)));
@@ -1472,7 +1629,7 @@ function renderHtml(initData) {
         }, [loadData]);
 
         const handleViewDetails = async (ip) => {
-          if (!ip || ip.includes('加载') || ip.includes('失败') || ip === '未知') return;
+          if (!isQueryableTarget(ip)) return;
           setSelectedIp(ip);
           setModalOpen(true);
           setDetailLoading(true);
